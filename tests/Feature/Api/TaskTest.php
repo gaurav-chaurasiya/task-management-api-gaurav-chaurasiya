@@ -78,5 +78,5 @@ test('user can delete their task', function () {
     $response = $this->withHeaders($this->headers)->deleteJson("/api/tasks/{$task->id}");
 
     $response->assertStatus(204);
-    $this->assertDatabaseMissing('tasks', ['id' => $task->id]);
+    $this->assertSoftDeleted('tasks', ['id' => $task->id]);
 });

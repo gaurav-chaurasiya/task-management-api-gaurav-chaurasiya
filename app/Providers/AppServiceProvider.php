@@ -11,7 +11,15 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->bind(
+            \App\Repositories\Contracts\ProjectRepositoryInterface::class,
+            \App\Repositories\EloquentProjectRepository::class
+        );
+
+        $this->app->bind(
+            \App\Repositories\Contracts\TaskRepositoryInterface::class,
+            \App\Repositories\EloquentTaskRepository::class
+        );
     }
 
     /**
@@ -19,6 +27,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        \Illuminate\Support\Facades\RateLimiter::for('api', function (\Illuminate\Http\Request $request) {
+            return \Illuminate\Cache\RateLimiting\Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
+        });
     }
 }
