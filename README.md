@@ -9,6 +9,17 @@ A robust REST API built with Laravel 11 for managing projects and tasks.
 - **Filtering & Sorting**: Filter tasks by status/priority and sort by due date, priority, or creation time.
 - **Quality Assurance**: 100% test pass rate with Pest, Level 5 PHPStan compliance.
 
+### 🌟 Bonus Features
+- **Docker Setup**: Laravel Sail integration for easy containerized development.
+- **Redis Caching**: Project and Task listings are cached with automatic invalidation.
+- **Queued Actions**: Event-driven architecture with background jobs for non-blocking operations.
+- **Service/Repository Pattern**: Decoupled architecture for better testability and scalability.
+- **API Rate Limiting**: Protected endpoints (60 requests/min).
+- **Pagination**: Support for paginated results in all listing endpoints.
+- **Soft Deletes**: Safety first approach to data deletion.
+- **CI/CD Pipeline**: GitHub Actions workflow for automated testing and analysis.
+- **API Documentation**: Interactive documentation generated via Scribe.
+
 ## Installation
 
 1. Clone the repository and navigate to the project directory.
@@ -27,28 +38,16 @@ A robust REST API built with Laravel 11 for managing projects and tasks.
    php artisan migrate --seed
    ```
 
+### Running with Docker (Sail)
+```bash
+./vendor/bin/sail up -d
+./vendor/bin/sail artisan migrate --seed
+```
+
 ## API Documentation
-
-### Authentication
-- `POST /api/register`: Register a new user.
-- `POST /api/login`: Login and receive a Bearer token.
-- `POST /api/logout`: Revoke current token (Protected).
-- `GET /api/user`: Get authenticated user profile (Protected).
-
-### Projects (Protected)
-- `GET /api/projects`: List user's projects.
-- `POST /api/projects`: Create a new project.
-- `GET /api/projects/{id}`: View a project details.
-- `PUT /api/projects/{id}`: Update a project.
-- `DELETE /api/projects/{id}`: Delete a project.
-
-### Tasks (Protected)
-- `GET /api/projects/{project}/tasks`: List tasks in a project (Supports `status`, `priority`, `sort_by`, `sort_order`).
-- `POST /api/projects/{project}/tasks`: Create a task in a project.
-- `GET /api/tasks/{id}`: View task details.
-- `PUT /api/tasks/{id}`: Update task.
-- `DELETE /api/tasks/{id}`: Delete task.
+The API documentation is available at `/docs` (when running locally) or can be found in `public/docs/index.html`.
 
 ## Development & testing
 - Run tests: `php artisan test`
 - Run Static Analysis: `./vendor/bin/phpstan analyse`
+- Generate Docs: `php artisan scribe:generate`

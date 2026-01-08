@@ -70,5 +70,5 @@ test('user can delete their project', function () {
     $response = $this->withHeaders($this->headers)->deleteJson("/api/projects/{$project->id}");
 
     $response->assertStatus(204);
-    $this->assertDatabaseMissing('projects', ['id' => $project->id]);
+    $this->assertSoftDeleted('projects', ['id' => $project->id]);
 });

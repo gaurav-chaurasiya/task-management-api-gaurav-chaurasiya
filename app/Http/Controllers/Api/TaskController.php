@@ -8,6 +8,7 @@ use App\Http\Requests\Api\UpdateTaskRequest;
 use App\Http\Resources\TaskResource;
 use App\Models\Project;
 use App\Models\Task;
+use App\Services\TaskService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -17,36 +18,34 @@ class TaskController extends Controller
 {
     use AuthorizesRequests;
 
+    protected TaskService $taskService;
+
+    public function __construct(TaskService $taskService)
+    {
+        $this->taskService = $taskService;
+    }
+
     public function index(Request $request, Project $project): AnonymousResourceCollection
     {
         $this->authorize('viewAny', [Task::class, $project]);
 
-        $query = $project->tasks();
-
-        if ($request->has('status')) {
-            $query->where('status', $request->input('status'));
-        }
-
-        if ($request->has('priority')) {
-            $query->where('priority', $request->input('priority'));
-        }
-
+        $filters = $request->only(['status', 'priority']);
         $sortBy = (string) $request->get('sort_by', 'created_at');
         $sortOrder = (string) $request->get('sort_order', 'desc');
 
-        if (in_array($sortBy, ['due_date', 'priority', 'created_at'])) {
-            $query->orderBy($sortBy, $sortOrder);
-        }
+        $tasks = $this->taskService->getPaginatedTasksForProject($project->id, $filters, $sortBy, $sortOrder);
 
-        return TaskResource::collection($query->get());
+        return TaskResource::collection($tasks);
     }
 
     public function store(StoreTaskRequest $request, Project $project): TaskResource
     {
         $this->authorize('create', [Task::class, $project]);
 
-        /** @var Task $task */
-        $task = $project->tasks()->create($request->validated());
+        $data = $request->validated();
+        $data['project_id'] = $project->id;
+
+        $task = $this->taskService->createTask($data);
 
         return new TaskResource($task);
     }
@@ -55,6 +54,8 @@ class TaskController extends Controller
     {
         $this->authorize('view', $task);
 
+        $task = $this->taskService->findTask($task->id);
+
         return new TaskResource($task);
     }
 
@@ -62,7 +63,9 @@ class TaskController extends Controller
     {
         $this->authorize('update', $task);
 
-        $task->update($request->validated());
+        $this->taskService->updateTask($task->id, $request->validated());
+        
+        $task = $this->taskService->findTask($task->id);
 
         return new TaskResource($task);
     }
@@ -71,7 +74,7 @@ class TaskController extends Controller
     {
         $this->authorize('delete', $task);
 
-        $task->delete();
+        $this->taskService->deleteTask($task->id);
 
         return response()->noContent();
     }
